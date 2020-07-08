@@ -1,6 +1,8 @@
 #include "header.h"
 
 int main() {
-    printf("Hello new, World!\n");
+
+    printf("Hello Debian-laptop, World!\n");
+
     return 0;
 }
