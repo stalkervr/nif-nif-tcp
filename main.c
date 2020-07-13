@@ -10,6 +10,7 @@ int main() {
     }
 
     struct ifaddrs *address = addresses;
+    time_local();
     while(address) {
         if (address->ifa_addr == NULL) {
             address = address->ifa_next;
