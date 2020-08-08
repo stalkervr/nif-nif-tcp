@@ -18,5 +18,11 @@
 void time_local();
 //
 
+// ip address check
+struct ifaddrs *addresses;
+
+void print_address();
+//
+
 #endif //NIF_NIF_TCP_HEADER_H
 
