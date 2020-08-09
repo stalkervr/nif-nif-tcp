@@ -1,10 +1,12 @@
+//
+// Created by stalkervr on 8/8/20.
+//
+
 #include "header.h"
-
-
 
 int main(int argc, char** argv) {
     // show local host time
-   time_local();
+    time_local();
     // show ip address host
     print_address();
     print_app_info();
@@ -42,14 +44,11 @@ int main(int argc, char** argv) {
         printf(" Open interface : %s\n", dev);
     }
 
+    printf("%s",system("host 140.82.118.3"));
+
     return 0;
 }
 
-void print_app_info(){
-    printf("%s - %s\n", APP_NAME, APP_DESC);
-    printf("%s\n", APP_COPYRIGHT);
-    printf("%s\n", APP_DISCLAIMER);
-    //printf("\n");
-}
+
 
 

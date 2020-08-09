@@ -1,5 +1,5 @@
 //
-// Created by stalkervr on 7/7/20.
+// Created by stalkervr on 8/8/20.
 //
 
 #ifndef NIF_NIF_TCP_HEADER_H
@@ -26,10 +26,9 @@
 #define APP_DISCLAIMER	"THERE IS ABSOLUTELY NO WARRANTY FOR THIS PROGRAM."
 
 
-//
+// app info function
 void print_app_info();
 //
-
 
 // time_func
 void time_local();

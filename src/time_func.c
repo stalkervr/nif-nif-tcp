@@ -1,12 +1,14 @@
 //
-// Created by stalkervr on 7/13/20.
+// Created by stalkervr on 8/8/20.
 //
+
 #include "header.h"
 
 void time_local()
 {
+    printf("\n");
     time_t timer;
     time(&timer);
-    printf ("Local time is: %s", ctime(&timer));
+    printf ("Locals time is: %s\n", ctime(&timer));
 }
 
