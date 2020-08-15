@@ -9,6 +9,6 @@ void time_local()
     printf("\n");
     time_t timer;
     time(&timer);
-    printf ("Locals time is: %s\n", ctime(&timer));
+    printf (" Locals time is: %s", ctime(&timer));
 }
 

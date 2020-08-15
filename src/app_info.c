@@ -6,8 +6,9 @@
 
 void print_app_info(){
     printf("\n");
-    printf("%s - %s\n", APP_NAME, APP_DESC);
-    printf("%s\n", APP_COPYRIGHT);
-    printf("%s\n", APP_DISCLAIMER);
+    printf(" %s - %s\n", APP_NAME, APP_DESC);
+    printf(" %s\n", APP_COPYRIGHT);
+    printf(" %s\n", APP_DISCLAIMER);
+    time_local();
     printf("\n");
 }
