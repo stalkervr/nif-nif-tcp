@@ -11,12 +11,13 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/socket.h>
+#include <sys/types.h> 
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
-#include <sys/types.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <ctype.h>
 
 
 #include <time.h>
@@ -28,6 +29,7 @@
 #define APP_COPYRIGHT	"Copyright (c) 2020 STALKERVR"
 #define APP_DISCLAIMER	"THERE IS ABSOLUTELY NO WARRANTY FOR THIS PROGRAM."
 
+//__BEGIN_DECLS
 // параметры работы по умолчанию
 // использовать сетевой интерфейс по умолчанию
 #define DEFAULT_NET_INTERFACE "-def"
@@ -42,11 +44,13 @@
 
 /* Ethernet адреса состоят из 6 байт */
 #define ETHER_ADDR_LEN 6
+//__END_DECLS
 
+typedef unsigned char u_char;
 /* Заголовок Ethernet */
 struct sniff_ethernet {
-    u_char ether_dhost[ETHER_ADDR_LEN]; /* Адрес назначения */
-    u_char ether_shost[ETHER_ADDR_LEN]; /* Адрес источника */
+    u_char ether_dhost[ETHER_ADDR_LEN ]; /* Адрес назначения */
+    u_char ether_shost[ETHER_ADDR_LEN ]; /* Адрес источника */
     u_short ether_type; /* IP? ARP? RARP? и т.д. */
 };
 
