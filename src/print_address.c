@@ -45,7 +45,7 @@ char* set_default_net_interface(pcap_if_t* interfaces, pcap_if_t* temp, char* er
     if(pcap_findalldevs(&interfaces, errbuf) == -1)
     {
         printf("\n Error in pcap findall devs");
-        //return -1;
+        return "-1";
     }
     printf("\n The interfaces present on the system are:");
     int i = 0;

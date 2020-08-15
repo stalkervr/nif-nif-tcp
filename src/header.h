@@ -16,6 +16,7 @@
 #include <netinet/if_ether.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <string.h>
 
 
 #include <time.h>
@@ -27,10 +28,16 @@
 #define APP_COPYRIGHT	"Copyright (c) 2020 STALKERVR"
 #define APP_DISCLAIMER	"THERE IS ABSOLUTELY NO WARRANTY FOR THIS PROGRAM."
 
+// параметры работы по умолчанию
+// использовать сетевой интерфейс по умолчанию
+#define DEFAULT_NET_INTERFACE "-def"
+// фильтр по умолчанию
+#define DEFAULT_FILTER_EXPRESSION "ip"
+
 /* default snap length (maximum bytes per packet to capture) */
 #define SNAP_LEN 1518
 
-/* ethernet headers are always exactly 14 bytes [1] */
+/* Заголовки Ethernet всегда состоят из 14 байтов */
 #define SIZE_ETHERNET 14
 
 /* Ethernet адреса состоят из 6 байт */
@@ -87,8 +94,7 @@ struct sniff_tcp {
     u_short th_urp;  /* экстренный указатель */
 };
 
-/* Заголовки Ethernet всегда состоят из 14 байтов */
-#define SIZE_ETHERNET 14
+
 
 const struct sniff_ethernet *ethernet; /* Заголовок Ethernet */
 const struct sniff_ip *ip; /* Заголовок IP */
@@ -101,6 +107,9 @@ u_int size_tcp;
 
 // app info function
 void print_app_info();
+void print_app_usage();
+void print_capture_info(
+        char* dev, bpf_u_int32 mask, bpf_u_int32 net, int num_packets, char* filter_exp);
 //
 
 // time_func
@@ -111,8 +120,6 @@ void time_local();
 struct ifaddrs *addresses;
 void print_address();
 char* set_default_net_interface(pcap_if_t* interfaces, pcap_if_t* temp, char* errbuf);
-//char* set_default_net_int(pcap_if_t *interfaces);
-
 //
 
 #endif //NIF_NIF_TCP_HEADER_H
