@@ -99,11 +99,11 @@ struct sniff_tcp {
 };
 
 
-
+/* declare pointers to packet headers */
 const struct sniff_ethernet *ethernet; /* Заголовок Ethernet */
 const struct sniff_ip *ip; /* Заголовок IP */
 const struct sniff_tcp *tcp; /* Заголовок TCP */
-const char *payload; /* Данные пакета */
+const u_char *payload; /* Данные пакета */
 
 u_int size_ip;
 u_int size_tcp;
