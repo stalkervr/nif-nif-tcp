@@ -105,6 +105,15 @@ int main(int argc, char** argv)
     // вывод информации о настройках сниффинга
     print_capture_info(dev,mask,net,num_packets,filter_exp);
 
+    server();
+
+    //int temp_s = server();
+
+    /*while(temp_s < 0){
+        temp_s=server();
+        server();
+    }*/
+
     /* Захват пакета */
     //packet = pcap_next(handle, &header);
     /* Вывод его длины */

@@ -126,5 +126,39 @@ void print_address();
 char* set_default_net_interface(pcap_if_t* interfaces, pcap_if_t* temp, char* errbuf);
 //
 
+// server
+#define SERVER_PORT    "8001"
+#define MAX_CONNECTION 1000
+
+typedef enum
+{
+    eHTTP_UNKNOWN = 0
+    ,eHTTP_CONNECT
+    ,eHTTP_DELETE
+    ,eHTTP_GET
+    ,eHTTP_HEAD
+    ,eHTTP_OPTIONS
+    ,eHTTP_PATCH
+    ,eHTTP_POST
+    ,eHTTP_PUT
+    ,eHTTP_TRACE
+}eHTTPMethod;
+
+typedef struct
+{
+    eHTTPMethod type;
+    char        path[255];
+}sHTTPHeader;
+
+void *get_client_addr(struct sockaddr *);
+int create_socket(const char *);
+
+void http_request(int);
+void parse_http_request(const char*, sHTTPHeader *);
+void send_message(int, const char*);
+void send_404(int);
+int server();
+//
+
 #endif //NIF_NIF_TCP_HEADER_H
 
