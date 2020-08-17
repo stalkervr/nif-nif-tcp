@@ -13,7 +13,8 @@ void print_hex_ascii_line(const u_char *payload, int len, int offset);
 int main(int argc, char** argv)
 {
 
-    pcap_if_t *interfaces,*temp;
+    pcap_if_t *interfaces = NULL;
+    pcap_if_t *temp = NULL;
 
     char* dev;                              // Устройство для сниффинга
     char errbuf[PCAP_ERRBUF_SIZE];          // Строка для хранения ошибок
@@ -225,13 +226,13 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     static int count = 1;                   /* packet counter */
 
     /* declare pointers to packet headers */
-    const struct sniff_ethernet *ethernet;  /* The ethernet header [1] */
-    const struct sniff_ip *ip;              /* The IP header */
-    const struct sniff_tcp *tcp;            /* The TCP header */
-    const char *payload;                    /* Packet payload */
+    //const struct sniff_ethernet *ethernet;  /* The ethernet header [1] */
+    //const struct sniff_tcp *tcp;            /* The TCP header */
+    //const char *payload;                    /* Packet payload */
 
-    int size_ip;
-    int size_tcp;
+    //int size_ip;
+    //int size_tcp;
+
     int size_payload;
 
     printf("\nPacket number %d:\n", count);
