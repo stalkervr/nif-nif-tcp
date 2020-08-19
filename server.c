@@ -63,9 +63,9 @@ int server()
             return -1;
         }
 
-        char ip[INET6_ADDRSTRLEN];
-        inet_ntop(client_addr.ss_family, get_client_addr((struct sockaddr *)&client_addr), ip, sizeof ip);
-        printf("server: got connection from %s\n", ip);
+        char ip_s[INET6_ADDRSTRLEN];
+        inet_ntop(client_addr.ss_family, get_client_addr((struct sockaddr *)&client_addr), ip_s, sizeof ip_s);
+        printf("server: got connection from %s\n", ip_s);
 
         // read
         http_request(client_d);
@@ -178,14 +178,14 @@ void http_request(int aSock)
 
 void parse_http_request(const char *apstrRequest, sHTTPHeader *apHeader)
 {
-    int  type_length = 0;
+    int  type_length;
     char type[255]   = {0};
     int  index = 0;
 
     apHeader->type = eHTTP_UNKNOWN;
 
     sscanf(&apstrRequest[index], "%s", type);
-    type_length = strlen(type);
+    type_length = (int)strlen(type);
 
     if(type_length == 3)
     {
@@ -206,14 +206,14 @@ void send_message(int aSock, const char *apstrMessage)
     strcat(buffer, apstrMessage);
     strcat(buffer, "</h1>");
 
-    int len = strlen(buffer);
+    int len = (int)strlen(buffer);
     send(aSock, buffer, len, 0);
 }
 
 void send_404(int aSock)
 {
     const char *buffer = "HTTP/1.1 404 \n\n";
-    int len = strlen(buffer);
+    int len = (int)strlen(buffer);
     send(aSock, buffer, len, 0);
 }
 
