@@ -127,6 +127,8 @@ char* set_default_net_interface(pcap_if_t* interfaces, pcap_if_t* temp, char* er
 //
 
 // server
+//#include <zconf.h>
+#include <unistd.h>
 #define SERVER_PORT    "8001"
 #define MAX_CONNECTION 1000
 

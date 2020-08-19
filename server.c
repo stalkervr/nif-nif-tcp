@@ -32,7 +32,8 @@ Server
 
 
 
-#include <zconf.h>
+//#include <zconf.h>
+#include <unistd.h>
 #include "header.h"
 
 int server()
