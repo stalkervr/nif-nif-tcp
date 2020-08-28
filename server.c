@@ -33,28 +33,31 @@ Server
 
 
 //#include <zconf.h>
-#include <unistd.h>
+
 #include "header.h"
 
-int server()
+int main()
 {
+    // дескриптор сокета
     int sock;
-
+    // создаем сокет на заданном порту
     sock = create_socket(SERVER_PORT);
     if(sock < 0)
     {
         fprintf(stderr, "error create socket\n");
         return -1;
     }
-
+    // если удачно сервер запускается
     printf("server created!\n");
-
+    // структура для хранения адреса клиента
     struct sockaddr_storage client_addr;
+    // дескриптор клиента -- идентификатор сокета
     int client_d;
-    //char client_ip
+    // бесконечный цикл ожидающий соединения
     while(1)
     {
         socklen_t s_size = sizeof(client_addr);
+        // здесь выполнение программы останавливается ожидая входящее соединение
         client_d = accept(sock, (struct sockaddr*)&client_addr, &s_size);
 
         if(client_d == -1)
@@ -62,20 +65,30 @@ int server()
             fprintf(stderr, "error accept\n");
             return -1;
         }
-
+        // после установки соединения браузер отправляет GET запрос и ожидает ответа
+        // GET /index.html HTTP/1.1
         char ip_s[INET6_ADDRSTRLEN];
+        /* extern const char *inet_ntop(int __af, const void *__cp, char *__buf, socklen_t __len)
+        Convert a Internet address in binary network format for interface
+        type AF in buffer starting at CP to presentation form and place
+        result in buffer of length LEN astarting at BUF
+         */
         inet_ntop(client_addr.ss_family, get_client_addr((struct sockaddr *)&client_addr), ip_s, sizeof ip_s);
         printf("server: got connection from %s\n", ip_s);
 
-        // read
+        // читаем соединение разбираем http
         http_request(client_d);
 
         close(client_d);
+        /* устанавливаем параметры сокета
+         * это необходимо для корректного перезапуска сервера, освобождения сокета,
+         * сокет может быть переиспользован*/
+        setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
     }
 
     return 0;
 }
-
+// проверяем семейство адресов и приводим к нужному типу IPv4 или IPv6
 void *get_client_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET)
@@ -86,21 +99,24 @@ void *get_client_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+// функция создает новый сокет
 int create_socket(const char *apstrPort)
 {
+    // addrinfo hetdb.h хранит всю информацию об адресе
     struct addrinfo hints;
     struct addrinfo *servinfo;
     struct addrinfo *p;
-
+    // заполняем hints нулями
     memset(&hints, 0, sizeof(hints));
 
-    // IPv4 or IPv6
-    hints.ai_family   = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags    = AI_PASSIVE;
+    // заполняем структуру hints IPv4 или IPv6
+    hints.ai_family   = AF_UNSPEC; // не важно IPv4 или IPv6
+    hints.ai_socktype = SOCK_STREAM; // тип сокета tcp stream socket
+    hints.ai_flags    = AI_PASSIVE; // ip адрес заполняется автоматически
 
-    int r = getaddrinfo(NULL, apstrPort, &hints, &servinfo);
-    if( r != 0)
+    // &servinfo выходной параметр будет заполнен внутри ф-ии
+    int rez = getaddrinfo(NULL, apstrPort, &hints, &servinfo);
+    if( rez != 0)
     {
         fprintf(stderr, "error getaddrinfo()\n");
         return -1;
@@ -108,20 +124,27 @@ int create_socket(const char *apstrPort)
 
     int sock;
     int yes;
+    // перебираем адреса в servinfo(это список)
     for(p = servinfo; p != NULL; p = p->ai_next)
     {
+        // создаем сокет socket возвращает номер дескриптора (идентифицирующее сокет)
         sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        // если создать не удалось переходим на следующую итерацию цикла
         if(sock == -1)
             continue;
-
+        /* устанавливаем параметры сокета
+         * это необходимо для корректного перезапуска сервера, освобождения сокета,
+         * сокет может быть переиспользован*/
         if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
         {
             fprintf(stderr, "error setsockopt\n");
+            // закрываем сокет
             close(sock);
-            freeaddrinfo(servinfo); // all done with this structure
+            // очищаем память servinfo
+            freeaddrinfo(servinfo);
             return -2;
         }
-
+        // привязываем созданный сокет к локальному адресу и порту
         if(bind(sock, p->ai_addr, p->ai_addrlen) == -1)
         {
             close(sock);
@@ -129,15 +152,18 @@ int create_socket(const char *apstrPort)
         }
         break;
     }
-
-    freeaddrinfo(servinfo); // all done with this structure
-
+    // очищаем память servinfo
+    freeaddrinfo(servinfo);
+    // если прошли по всему списку servinfo и не нашли нужный нам сокет
     if(p == NULL)
     {
+        // если прошли по всему списку servinfo и не нашли нужный нам сокет
         fprintf(stderr, "failed to find address\n");
         return -3;
     }
-
+    // listen подготавливает сокет для входящего соединения
+    // сокет переключается в пассивный режим и ожидает соединения
+    //TODO: это блокирующий сокет !!! посмотреть неблокирующий
     if(listen(sock, MAX_CONNECTION) == -1)
     {
         fprintf(stderr, "error listen\n");
@@ -146,7 +172,8 @@ int create_socket(const char *apstrPort)
 
     return sock;
 }
-
+// читаем соединение разбираем http
+// aSock идентификатор сокета клиента
 void http_request(int aSock)
 {
     const int request_buffer_size = 65536;

@@ -126,6 +126,17 @@ void print_address();
 char* set_default_net_interface(pcap_if_t* interfaces, pcap_if_t* temp, char* errbuf);
 //
 
+// authentication
+//sudo apt-get install libpam0g-dev
+//gcc -o auth auth.c -lpam -lpam_misc
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
+
+
+int auth();
+
+//
+
 // server
 //#include <zconf.h>
 #include <unistd.h>
@@ -148,19 +159,22 @@ typedef enum
 
 typedef struct
 {
-    eHTTPMethod type;
-    char        path[255];
+    eHTTPMethod type; // метод GET и тд
+    char        path[255]; // тело запроса
 }sHTTPHeader;
 
 void *get_client_addr(struct sockaddr *);
 int create_socket(const char *);
-
-void http_request(int);
+// читаем соединение разбираем http
+// aSock идентификатор сокета клиента
+void http_request(int aSock);
+// функция разбирает запрос http
+// получает строку запроса и указатель на структуру sHTTPHeader
 void parse_http_request(const char*, sHTTPHeader *);
 void send_message(int, const char*);
 void send_404(int);
 int server();
-//
+// server
 
 #endif //NIF_NIF_TCP_HEADER_H
 
