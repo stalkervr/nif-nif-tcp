@@ -1,40 +1,36 @@
 //
 // Created by stalkervr on 8/8/20.
 //
-
+// подключаем общий заголовок
 #include "header.h"
+//
 
-void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
-
-void print_payload(const u_char *payload, int len);
-
-void print_hex_ascii_line(const u_char *payload, int len, int offset);
+// глобальные переменные
+int  num_packets = 0;
+//
 
 int main(int argc, char** argv)
 {
-
     pcap_if_t *interfaces = NULL;
     pcap_if_t *temp = NULL;
 
-    char* dev;                              // Устройство для сниффинга
-    char errbuf[PCAP_ERRBUF_SIZE];          // Строка для хранения ошибок
-    pcap_t *handle;                         // Дескриптор сессии
+    char* dev;                             // Устройство для сниффинга
+    char errbuf[PCAP_ERRBUF_SIZE];         // Строка для хранения ошибок
+    pcap_t *handle;                        // Дескриптор сессии
 
-    char* filter_exp = argv[2];             // Выражение фильтра
-    struct bpf_program fp;                  // Скомпилированный фильтр
-    bpf_u_int32 mask;                       // Сетевая маска устройства
-    bpf_u_int32 net;                        // IP устройства
-    //struct pcap_pkthdr header;              // Заголовок который нам дает PCAP
-    //const u_char *packet;                   // Пакет
-    char def_int[] = DEFAULT_NET_INTERFACE; // сетевой интерфейс по умолчанию
-    int num_packets = -1;                   // количество пакетов для захвата отрицат ч-ло -> не ограничено
+    char* filter_exp = argv[2];            // Выражение фильтра
+    struct bpf_program fp;                 // Скомпилированный фильтр
+    bpf_u_int32 mask;                      // Сетевая маска устройства
+    bpf_u_int32 net;                       // IP устройства
+    struct pcap_pkthdr header;           // Заголовок который нам дает PCAP
+    const u_char *packet;                // Пакет
+    char* def_int = DEFAULT_NET_INTERFACE; // сетевой интерфейс по умолчанию
+    num_packets = 20;                       // количество пакетов для захвата отрицат ч-ло -> не ограничено
 
     // показать информацию о программе
     print_app_info();
     // показать ip адрес хоста
     print_address();
-
-
     // выводим список доступных сетевых интерфейсов и
     // определяем устройство для захвата трафика dev
     // если указан параметр -def
@@ -46,7 +42,6 @@ int main(int argc, char** argv)
     } else {
         dev = argv[1];
     }
-
     // определяем сетевую маску и IP устройства
     // необходимо для фильтра
     if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1) {
@@ -57,22 +52,19 @@ int main(int argc, char** argv)
         //printf(" Netmask for device %u: \n",mask);
         //printf(" IP device %u: \n", net);
     }
-
     // открываем сессию захвата трафика
-    handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
+    handle = pcap_open_live(dev, BUFSIZ, 1, 100, errbuf);
     if (handle == NULL) {
         fprintf(stderr, " Couldn't open device %s: %s\n", dev, errbuf);
         return(2);
     } else {
         //printf(" Open interface : %s\n", dev);
     }
-
     // проверяем, что мы захватываем на устройстве Ethernet
     if (pcap_datalink(handle) != DLT_EN10MB) {
         fprintf(stderr, "%s is not an Ethernet\n", dev);
         exit(EXIT_FAILURE);
     }
-
     // компилируем фильтр трафика из переданного в коммандной строке выржения
     // второй параметр в строке
     // если фильтр не указан используется фильтр по умолчанию
@@ -86,14 +78,13 @@ int main(int argc, char** argv)
     } else {
         //printf(" Filter parsed: %s \n", filter_exp);
     }
-
+    // проверяем количество переданных аргументов
     if(argc > 3)
     {
         fprintf(stderr, " Error: unrecognized command-line options\n\n");
         print_app_usage();
         exit(EXIT_FAILURE);
     }
-
     // устанавливаем фильтр трафика
     if (pcap_setfilter(handle, &fp) == -1) {
         fprintf(stderr, " Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
@@ -105,7 +96,7 @@ int main(int argc, char** argv)
     // вывод информации о настройках сниффинга
     print_capture_info(dev,mask,net,num_packets,filter_exp);
 
-    server();
+    //server();
 
     //int temp_s = server();
 
@@ -122,6 +113,8 @@ int main(int argc, char** argv)
     //printf(" Jacked a packet with length of [%ld]\n", header.ts.tv_sec);
 
     pcap_loop(handle, num_packets, got_packet, NULL);
+
+    write_log();
 
     /* Закрытие сессии */
     /* cleanup */
@@ -242,9 +235,15 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     //int size_ip;
     //int size_tcp;
 
+    int time = header->ts.tv_sec;
     int size_payload;
+    sendMes temp_str[num_packets];
 
-    printf("\nPacket number %d:\n", count);
+    printf("\nPacket number : %d\n", count);
+    temp_str[count-1].pac_num = count;
+    printf("\nTime sec : %d\n", time);
+    temp_str[count-1].time = time;
+
     count++;
 
     /* define ethernet header */
@@ -260,113 +259,142 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
     /* print source and destination IP addresses */
     printf("       From: %s\n", inet_ntoa(ip->ip_src));
+    strcpy(temp_str[count-2].source_ip, inet_ntoa(ip->ip_src));
+
     printf("         To: %s\n", inet_ntoa(ip->ip_dst));
+    strcpy(temp_str[count-2].dest_ip,inet_ntoa(ip->ip_dst));
 
     /* определение протокола значения определены в netinet/in.h*/
     switch(ip->ip_p) {
         case IPPROTO_IP:
             /* Dummy protocol for TCP.  */
             printf("   Protocol: IP\n");
+            strcpy(temp_str[count-2].protocol, "IP");
             return;
         case IPPROTO_ICMP:
             /* Internet Control Message Protocol.  */
             printf("   Protocol: ICMP\n");
+            strcpy(temp_str[count-2].protocol, "ICMP");
             return;
         case IPPROTO_IGMP:
             /* Internet Group Management Protocol. */
             printf("   Protocol: IGMP\n");
+            strcpy(temp_str[count-2].protocol, "IGMP");
             return;
         case IPPROTO_IPIP:
             /* IPIP tunnels (older KA9Q tunnels use 94).  */
             printf("   Protocol: IPIP\n");
+            strcpy(temp_str[count-2].protocol, "IPIP");
             return;
         case IPPROTO_TCP:
             // Transmission Control Protocol.
             printf("   Protocol: TCP\n");
+            strcpy(temp_str[count-2].protocol, "TCP");
             break;
         case IPPROTO_EGP:
             /* Exterior Gateway Protocol.  */
             printf("   Protocol: EGP\n");
+            strcpy(temp_str[count-2].protocol, "EGP");
             break;
         case IPPROTO_PUP:
             /* PUP protocol.  */
             printf("   Protocol: PUP\n");
+            strcpy(temp_str[count-2].protocol, "PUP");
             break;
         case IPPROTO_UDP:
             // User Datagram Protocol.
             printf("   Protocol: UDP\n");
+            strcpy(temp_str[count-2].protocol, "UDP");
             return;
         case IPPROTO_IDP:
             /* XNS IDP protocol.  */
             printf("   Protocol: IDP\n");
+            strcpy(temp_str[count-2].protocol, "IDP");
             break;
         case IPPROTO_TP:
             /* SO Transport Protocol Class 4.  */
             printf("   Protocol: TP\n");
+            strcpy(temp_str[count-2].protocol, "TP");
             break;
         case IPPROTO_DCCP:
             /* Datagram Congestion Control Protocol.  */
             printf("   Protocol: DCCP\n");
+            strcpy(temp_str[count-2].protocol, "DCCP");
             break;
         case IPPROTO_IPV6:
             /* IPv6 header.  */
             printf("   Protocol: IPV6\n");
+            strcpy(temp_str[count-2].protocol, "IPV6");
             break;
         case IPPROTO_RSVP:
             /* Reservation Protocol.  */
             printf("   Protocol: RSVP\n");
+            strcpy(temp_str[count-2].protocol, "RSVP");
             break;
         case IPPROTO_GRE:
             /* General Routing Encapsulation.  */
             printf("   Protocol: GRE\n");
+            strcpy(temp_str[count-2].protocol, "GRE");
             break;
         case IPPROTO_ESP:
             /* encapsulating security payload.  */
             printf("   Protocol: ESP\n");
+            strcpy(temp_str[count-2].protocol, "ESP");
             break;
         case IPPROTO_AH:
             /* authentication header.  */
             printf("   Protocol: AH\n");
+            strcpy(temp_str[count-2].protocol, "AH");
             break;
         case IPPROTO_MTP:
             /* Multicast Transport Protocol.  */
             printf("   Protocol: MTP\n");
+            strcpy(temp_str[count-2].protocol, "MTP");
             break;
         case IPPROTO_BEETPH:
             /* IP option pseudo header for BEET.  */
             printf("   Protocol: BEETPH\n");
+            strcpy(temp_str[count-2].protocol, "BEETPH");
             break;
         case IPPROTO_ENCAP:
             /* Encapsulation Header.  */
             printf("   Protocol: ENCAP\n");
+            strcpy(temp_str[count-2].protocol, "ENCAP");
             break;
         case IPPROTO_PIM:
             /* Protocol Independent Multicast.  */
             printf("   Protocol: PIM\n");
+            strcpy(temp_str[count-2].protocol, "PIM");
             break;
         case IPPROTO_COMP:
             /* Compression Header Protocol.  */
             printf("   Protocol: COMP\n");
+            strcpy(temp_str[count-2].protocol, "COMP");
             break;
         case IPPROTO_SCTP:
             /* Stream Control Transmission Protocol.  */
             printf("   Protocol: SCTP\n");
+            strcpy(temp_str[count-2].protocol, "SCTP");
             break;
         case IPPROTO_UDPLITE:
             /* UDP-Lite protocol.  */
             printf("   Protocol: UDPLITE\n");
+            strcpy(temp_str[count-2].protocol, "UDPLITE");
             break;
         case IPPROTO_MPLS:
             /* MPLS in IP.  */
             printf("   Protocol: MPLS\n");
+            strcpy(temp_str[count-2].protocol, "MPLS");
             break;
         case IPPROTO_RAW:
             /* Raw IP packets.  */
             printf("   Protocol: RAW\n");
+            strcpy(temp_str[count-2].protocol, "RAW");
             break;
 
         default:
             printf("   Protocol: unknown\n");
+            strcpy(temp_str[count-2].protocol, "unknown");
             return;
     }
 
@@ -383,7 +411,9 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     }
 
     printf("   Src port: %d\n", ntohs(tcp->th_sport));
+    temp_str[count-2].source_port = ntohs(tcp->th_sport);
     printf("   Dst port: %d\n", ntohs(tcp->th_dport));
+    temp_str[count-2].dest_port = ntohs(tcp->th_dport);
 
     /* define/compute tcp payload (segment) offset */
     payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);
@@ -400,8 +430,65 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
         print_payload(payload, size_payload);
     }
 
+
+
+// file_2
+
+    FILE* file_stream;
+    if((file_stream= fopen(LIVE_SCAN_FILE, "w")) == NULL)
+    {
+        perror("Error occured while opening file");
+        fprintf(stdout,"Error open file");
+        //return 1;
+    }
+
+    const char* last_char;
+    const char* json_header = "{\n\"data\": [\n";
+    const char* json_footer = "\n}";
+
+    fprintf(file_stream,"%s",json_header);
+
+    for(int i = 0; i < (count-1); i++) {
+
+        fprintf(file_stream,"{\"pack_number\":%d,", temp_str[i].pac_num);
+        fprintf(file_stream,"\"pack_time\":%d,", temp_str[i].time);
+        fprintf(file_stream, "\"source_ip\":\"%s\",", temp_str[i].source_ip);
+        fprintf(file_stream,"\"dest_ip\":\"%s\",", temp_str[i].dest_ip);
+        fprintf(file_stream,"\"source_port\":%d,", temp_str[i].source_port);
+        fprintf(file_stream,"\"dest_port\":%d,", temp_str[i].dest_port);
+        fprintf(file_stream,"\"protocol\":\"%s\"}", temp_str[i].protocol);
+        if ((count-2) == i) {
+            last_char = "";
+        } else {
+            last_char = ",";
+        }
+        fprintf(file_stream, "%s\n", last_char);
+    }
+
+    if ((count-1) == num_packets){
+        fprintf(file_stream, "],\n\"scan_state\":%d", LIVE_SCAN_END);
+    } else {
+        fprintf(file_stream, "],\n\"scan_state\":%d", LIVE_SCAN_RUN);
+    }
+    fprintf(file_stream,"%s",json_footer);
+    fclose(file_stream);
+    //sleep(2);
+    //*****************************************************************
+
+//    for(int i = 0; i < (count-1); i++){
+//        fprintf(stdout,"*********************************************\n");
+//        fprintf(stdout,"pac_num = %d\n",temp_str[i].pac_num);
+//        fprintf(stdout,"*********************************************\n");
+//    }
+    //*****************************************************************
     return;
 }
+
+
+
+// server
+
+// server
 
 
 

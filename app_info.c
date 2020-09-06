@@ -34,7 +34,7 @@ void print_capture_info(
     if(num_packets < 0){
         printf(" Number of packets:  unlimited\n");
     } else {
-        printf(" Number of packets: %d\n", num_packets);
+        printf(" Number of packets:  %d\n", num_packets);
     }
     printf(" Filter expression:  %s\n", filter_exp);
 }
