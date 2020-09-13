@@ -4,7 +4,7 @@
 
 #ifndef NIF_NIF_TCP_HEADER_H
 #define NIF_NIF_TCP_HEADER_H
-
+//test
 // подключение системных бибблиотек
 #include <pcap.h>
 #include <stdio.h>
@@ -27,6 +27,7 @@
 __BEGIN_DECLS
 // информация о приложении
 #define APP_NAME		"nifnif"
+#define APP_NAME		"nifnif_1"
 #define APP_DESC		"Sniffer example using libpcap"
 #define APP_COPYRIGHT	"Copyright (c) 2020 STALKERVR"
 #define APP_DISCLAIMER	"THERE IS ABSOLUTELY NO WARRANTY FOR THIS PROGRAM."
