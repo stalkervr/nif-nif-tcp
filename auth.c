@@ -6,7 +6,7 @@
 
 
 
-int auth() {
+int main() {
     pam_handle_t* pamh;
     struct pam_conv pamc;
     /* Указание диалоговой функции. */
@@ -18,8 +18,11 @@ int auth() {
     /* Аутентификация пользователя. */
     if (pam_authenticate(pamh, 0) != PAM_SUCCESS)
         fprintf(stderr, "Authentication failed!\n");
-    else
+    else {
         fprintf(stderr, "Authentication OK.\n");
+        system("su -c konsole");
+    }
+
     /* Конец сеанса. */
     pam_end(pamh, 0);
     return 0;
