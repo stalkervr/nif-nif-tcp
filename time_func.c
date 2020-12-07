@@ -12,3 +12,11 @@ void time_local()
     printf (" Locals time is: %s", ctime(&timer));
 }
 
+char* time_rec()
+{
+    //printf("\n");
+    time_t timer;
+    time(&timer);
+    return ctime(&timer);
+}
+

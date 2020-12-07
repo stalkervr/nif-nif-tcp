@@ -4,7 +4,7 @@ project(nif_nif_tcp LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(nif_nif_tcp main.c header.h time_func.c print_address.c app_info.c server.c auth.c)
+add_executable(nif_nif_tcp main.c header.h time_func.c print_address.c app_info.c auth.c file_work.c)
 
 include(FindPCAP.cmake)
 
