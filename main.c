@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     struct pcap_pkthdr header;           // Заголовок который нам дает PCAP
     const u_char *packet;                // Пакет
     char* def_int = DEFAULT_NET_INTERFACE; // сетевой интерфейс по умолчанию
-    num_packets = 20;                       // количество пакетов для захвата отрицат ч-ло -> не ограничено
+    num_packets = 200;                       // количество пакетов для захвата отрицат ч-ло -> не ограничено
 
     // показать информацию о программе
     print_app_info();
